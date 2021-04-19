@@ -17,6 +17,7 @@ spec:
             - .h
             - .hpp
           file:
+          repo:
     - name: lintjava
       host: 127.0.0.1
       port: 9091
@@ -27,6 +28,7 @@ spec:
             - .java
             - .xml
           file:
+          repo:
     - name: lintpython
       host: 127.0.0.1
       port: 9092
@@ -36,6 +38,7 @@ spec:
           extension:
             - .py
           file:
+          repo:
     - name: lintshell
       host: 127.0.0.1
       port: 9093
@@ -45,6 +48,7 @@ spec:
           extension:
             - .sh
           file:
+          repo:
   review:
     - name: gerrit
       host: http://127.0.0.1/

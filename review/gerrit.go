@@ -55,7 +55,7 @@ func (g *gerrit) Clean(name string) error {
 }
 
 // nolint:gocyclo
-func (g *gerrit) Fetch(root, commit string) (rname string, flist []string, emsg error) {
+func (g *gerrit) Fetch(root, commit string) (pname, rname string, flist []string, emsg error) {
 	helper := func(data map[string]interface{}) bool {
 		ret := true
 		if val, ok := data["status"]; ok {
@@ -69,13 +69,16 @@ func (g *gerrit) Fetch(root, commit string) (rname string, flist []string, emsg 
 	// Query commit
 	r, err := g.get(g.urlQuery("commit:"+commit, []string{"CURRENT_REVISION"}, 0))
 	if err != nil {
-		return "", nil, errors.Wrap(err, "failed to query")
+		return "", "", nil, errors.Wrap(err, "failed to query")
 	}
 
 	ret, err := g.unmarshalList(r)
 	if err != nil {
-		return "", nil, errors.Wrap(err, "failed to unmarshalList")
+		return "", "", nil, errors.Wrap(err, "failed to unmarshalList")
 	}
+
+	// TODO
+	repo := ""
 
 	revisions := ret["revisions"].(map[string]interface{})
 	current := revisions[ret["current_revision"].(string)].(map[string]interface{})
@@ -88,12 +91,12 @@ func (g *gerrit) Fetch(root, commit string) (rname string, flist []string, emsg 
 	// Get files
 	buf, err := g.get(g.urlFiles(changeNum, revisionNum))
 	if err != nil {
-		return "", nil, errors.Wrap(err, "failed to files")
+		return "", "", nil, errors.Wrap(err, "failed to files")
 	}
 
 	fs, err := g.unmarshal(buf)
 	if err != nil {
-		return "", nil, errors.Wrap(err, "failed to unmarshal")
+		return "", "", nil, errors.Wrap(err, "failed to unmarshal")
 	}
 
 	// Get content
@@ -103,7 +106,7 @@ func (g *gerrit) Fetch(root, commit string) (rname string, flist []string, emsg 
 		}
 		buf, err = g.get(g.urlContent(changeNum, revisionNum, key))
 		if err != nil {
-			return "", nil, errors.Wrap(err, "failed to content")
+			return "", "", nil, errors.Wrap(err, "failed to content")
 		}
 
 		file := filepath.Base(key) + proto.Base64Content
@@ -113,19 +116,19 @@ func (g *gerrit) Fetch(root, commit string) (rname string, flist []string, emsg 
 
 		err = g.write(filepath.Join(path, filepath.Dir(key)), file, string(buf))
 		if err != nil {
-			return "", nil, errors.Wrap(err, "failed to fetch")
+			return "", "", nil, errors.Wrap(err, "failed to fetch")
 		}
 	}
 
 	// Get patch
 	buf, err = g.get(g.urlPatch(changeNum, revisionNum))
 	if err != nil {
-		return "", nil, errors.Wrap(err, "failed to patch")
+		return "", "", nil, errors.Wrap(err, "failed to patch")
 	}
 
 	err = g.write(path, proto.Base64Patch, string(buf))
 	if err != nil {
-		return "", nil, errors.Wrap(err, "failed to fetch")
+		return "", "", nil, errors.Wrap(err, "failed to fetch")
 	}
 
 	// Return files
@@ -143,7 +146,7 @@ func (g *gerrit) Fetch(root, commit string) (rname string, flist []string, emsg 
 		}
 	}
 
-	return path, files, nil
+	return path, repo, files, nil
 }
 
 // nolint:gocyclo

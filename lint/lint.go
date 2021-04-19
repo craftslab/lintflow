@@ -31,7 +31,7 @@ import (
 )
 
 type Lint interface {
-	Run(root string, files []string) ([]proto.Format, error)
+	Run(root, repo string, files []string) ([]proto.Format, error)
 }
 
 type Config struct {
@@ -52,7 +52,7 @@ func DefaultConfig() *Config {
 	return &Config{}
 }
 
-func (l *lint) Run(root string, files []string) ([]proto.Format, error) {
+func (l *lint) Run(root, repo string, files []string) ([]proto.Format, error) {
 	type result struct {
 		data []proto.Format
 		err  error
@@ -62,7 +62,7 @@ func (l *lint) Run(root string, files []string) ([]proto.Format, error) {
 	ch := make(chan result, len(l.cfg.Lints))
 
 	for _, val := range l.cfg.Lints {
-		buf := l.filter(val.Filter, files)
+		buf := l.filter(val.Filter, repo, files)
 		if len(buf) != 0 {
 			bypass = false
 		}
@@ -102,7 +102,7 @@ func (l *lint) Run(root string, files []string) ([]proto.Format, error) {
 	return ret, nil
 }
 
-func (l *lint) filter(f config.Filter, data []string) []string {
+func (l *lint) filter(f config.Filter, repo string, data []string) []string {
 	matchExtension := func(data string) bool {
 		match := false
 		for _, val := range f.Include.Extension {
@@ -123,6 +123,21 @@ func (l *lint) filter(f config.Filter, data []string) []string {
 			}
 		}
 		return match
+	}
+
+	matchRepo := func(data string) bool {
+		match := false
+		for _, val := range f.Include.Repo {
+			if val == data {
+				match = true
+				break
+			}
+		}
+		return match
+	}
+
+	if !matchRepo(repo) {
+		return []string{}
 	}
 
 	var buf []string

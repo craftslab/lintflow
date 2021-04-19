@@ -52,19 +52,21 @@ func TestClean(t *testing.T) {
 	assert.Equal(t, nil, err)
 }
 
+// nolint: dogsled
 func TestFetch(t *testing.T) {
 	h := initHandle(t)
 
 	d, _ := os.Getwd()
 	root := filepath.Join(d, "gerrit-test-fetch")
 
-	_, _, err := h.Fetch(root, commitGerrit)
+	_, _, _, err := h.Fetch(root, commitGerrit)
 	assert.Equal(t, nil, err)
 
 	err = h.Clean(root)
 	assert.Equal(t, nil, err)
 }
 
+// nolint: dogsled
 func TestVote(t *testing.T) {
 	h := initHandle(t)
 

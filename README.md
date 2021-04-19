@@ -114,6 +114,8 @@ spec:
           file:
             - message
             - patch
+          repo:
+            - foo
     - name: lintjava
       host: 127.0.0.1
       port: 9091
@@ -126,6 +128,8 @@ spec:
           file:
             - message
             - patch
+          repo:
+            - foo
     - name: lintpython
       host: 127.0.0.1
       port: 9092
@@ -137,6 +141,8 @@ spec:
           file:
             - message
             - patch
+          repo:
+            - foo
     - name: lintshell
       host: 127.0.0.1
       port: 9093
@@ -148,6 +154,8 @@ spec:
           file:
             - message
             - patch
+          repo:
+            - foo
   review:
     - name: gerrit
       host: http://127.0.0.1/

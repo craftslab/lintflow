@@ -81,14 +81,14 @@ func (f *flow) routine(data interface{}) interface{} {
 
 	commit := data.(string)
 
-	dir, files, err := f.cfg.Review.Fetch(root, commit)
+	dir, repo, files, err := f.cfg.Review.Fetch(root, commit)
 	defer func() { _ = f.cfg.Review.Clean(root) }()
 	if err != nil {
 		log.Println(err)
 		return nil
 	}
 
-	buf, err := f.cfg.Lint.Run(dir, files)
+	buf, err := f.cfg.Lint.Run(dir, repo, files)
 	if err != nil {
 		log.Println(err)
 		return nil
